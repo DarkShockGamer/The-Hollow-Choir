@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Hollow Choir</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica:ital@0;1&family=Courier+Prime&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#111411;--ink:#d4cdb8;--dim:#8a8776;--line:#2b312c;--panel:#181d19;--lamp:#d9a95a;--blood:#b0443a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:'IM Fell DW Pica',Georgia,serif;font-size:19px;line-height:1.65;min-height:100vh;
+ background:radial-gradient(ellipse at 50% 20%,#1a201b 0,#0b0d0b 80%)}
+main{max-width:680px;margin:0 auto;padding:28px 20px 80px}
+h1{font-weight:400;font-size:2.6rem;letter-spacing:.04em;margin:.2em 0}
+h2{font-weight:400;font-size:1.5rem;margin:0 0 .3em;color:var(--lamp)}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;font-family:'Courier Prime',monospace;font-size:.8rem;color:var(--dim)}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:.45em .9em;cursor:pointer;border-radius:2px}
+button:hover:not(:disabled){border-color:var(--lamp);color:var(--lamp)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.small{font-family:'Courier Prime',monospace;font-size:.78rem;padding:.3em .6em}
+.story{margin:18px 0 22px;white-space:pre-line}
+.spots{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.spots button.seen{color:var(--dim)}
+.read{border-left:3px solid var(--lamp);padding:6px 0 6px 16px;margin:16px 0;min-height:3em;white-space:pre-line}
+.read.bad{border-color:var(--blood)}
+.puz{border:1px solid var(--line);background:var(--panel);padding:16px 18px;margin:22px 0}
+.puz p{margin:0 0 12px}
+.puz input{font-family:'Courier Prime',monospace;font-size:1.1rem;background:#0c0e0c;color:var(--ink);border:1px solid var(--line);padding:.4em .6em;width:12em;text-transform:uppercase}
+.seq{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.cur{font-family:'Courier Prime',monospace;min-height:1.6em;color:var(--lamp)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+aside{border-top:1px solid var(--line);margin-top:34px;padding-top:14px;font-family:'Courier Prime',monospace;font-size:.85rem;color:var(--dim)}
+aside b{color:var(--ink);font-weight:400}
+aside ul{margin:4px 0 12px;padding-left:18px}
+.end{font-style:italic;color:var(--blood)}
+.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.flick{animation:fl 7s infinite}
+@keyframes fl{0%,92%,100%{opacity:1}93%{opacity:.55}95%{opacity:.9}97%{opacity:.4}}
+#whisper{position:fixed;inset:auto 0 18vh 0;text-align:center;color:var(--blood);font-style:italic;opacity:0;pointer-events:none;transition:opacity 1.2s}
+@media(prefers-reduced-motion:reduce){.flick,.shake{animation:none}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="whisper" aria-hidden="true"></div>
+<script>
+const SYM=["Candle","Bell","Crow","Moon"];
+const ITEMS={cassette:"Cassette tape",key:"Brass chapel key",candle:"Candle stub",robe:"Grey robe",ledger:"Torn ledger page"};
+
+const CH=[
+{
+ title:"Eli's Apartment",
+ intro:"Marrow Fen, 11:40 p.m. Your brother Eli has not answered a call in nine days. His last text, sent to you alone, read: \"Don't come. Please come.\"\n\nThe landlord lets you in and does not step past the doorway. \"He stopped paying the lights,\" he says. \"The humming started the same week.\"\n\nThe apartment is cold. Something in the walls is humming one long, low note.",
+ spots:[
+  {l:"Desk",t:"Sketches of a bell tower, over and over, each one more detailed. One line is underlined three times: \"They sing at the chapel on Alder Road. Do not go alone.\"",clue:"Eli's notes point to the chapel on Alder Road."},
+  {l:"Wall calendar",t:"October. Three dates are circled in red, each with a tiny drawing: a bell on the 1st, a moon on the 3rd, a crow on the 7th.",clue:"Calendar: bell on the 1st, moon on the 3rd, crow on the 7th."},
+  {l:"Closet safe",t:"A small wall safe with a three-digit dial. A yellow sticky note is taped above it, in Eli's handwriting: \"Moon. Crow. Bell. Same order every time.\"",clue:"Safe note: \"Moon. Crow. Bell.\""},
+  {l:"Window",t:"Across the street a figure in a grey robe stands under the streetlight, facing your window. You blink. The streetlight is empty. The humming gets a little louder."},
+  {l:"Bed",t:"Unmade. The pillow has a dent in it, as if someone lay there staring at the ceiling for days. Scratched into the wall above the headboard, hundreds of times: a small circle with nothing inside."}
+ ],
+ puz:{ask:"The safe wants three digits.",type:"code",ans:["371"],hints:["Eli wrote the order on the sticky note.","Each word on the note matches a date on the calendar.","Moon is the 3rd, crow is the 7th, bell is the 1st."]},
+ win:"The safe opens with a soft click. Inside: a cassette tape labeled \"PLAY AT THE CHAPEL\" and a brass key. A third object slides out, a stub of candle wax. You pocket it all.",
+ reward:["cassette","key","candle"]
+},
+{
+ title:"The Chapel on Alder Road",
+ intro:"The chapel sits at the end of a gravel road with no streetlights. The brass key turns the rusted lock without a sound, as if the lock has been oiled for visitors.\n\nInside, the pews face the wrong way. They face the back wall, where a hymn board hangs crooked. A cassette player sits on the front pew with its cord cut, but its screen is lit.",
+ spots:[
+  {l:"Cassette player",need:"cassette",nt:"You need something to play in it.",t:"You press the tape in. Eli whispers, close to the microphone: \"If you hear this, the hymn board is a shift cipher. Step every letter back as many places as there are bells over the Choir.\" Behind him, another voice hums in perfect harmony. Eli's voice stops. The humming doesn't.",clue:"Cipher: shift letters back by the number of bells over the Choir."},
+  {l:"Bell tower",t:"You look up through the broken ceiling. Three bells hang in the dark. The middle one is swaying, though there is no wind.",clue:"Three bells hang over the chapel."},
+  {l:"Hymn board",t:"Carved letters read: ZLWKLQ. Beneath, scratched deeper: \"Where does the Choir keep its lambs?\""},
+  {l:"Pews",t:"Every hymnal holds the same torn-out page. In the last pew, someone has left a pair of small shoes, laced and neatly side by side. Too small for an adult."},
+  {l:"Altar",t:"The altar is bare, except for a ring of old wax. Your candle stub fits the shape of one of the missing stubs exactly."}
+ ],
+ puz:{ask:"Decode the hymn board and say where the lambs are kept. (One word.)",type:"code",ans:["within"],hints:["Shift each letter of ZLWKLQ back through the alphabet.","The tape tells you how far to shift.","Three bells means three steps back. Z becomes W."]},
+ win:"You say the word aloud. Under the altar, a trapdoor unlatches itself. Cold air, damp earth, and the humming rising from below like a held breath.",
+ reward:[]
+},
+{
+ title:"The Tunnels",
+ intro:"The tunnel is brick for the first thirty steps, then raw earth. Your phone has no signal and then no light. Only the candle stub is left, and it burns blue-white and low.\n\nThe tunnel ends at a door with four carved symbols and no handle. Something in the dark breathes when you breathe.",
+ spots:[
+  {l:"Scratched wall",need:"candle",nt:"It is too dark to read anything. You need a light.",t:"In candlelight, a hymn is scratched into the brick: \"Light the candle. Ring the bell. Wake the crow. Let the moon.\" Beneath it: E.V.",clue:"Wall hymn order: Candle, Bell, Crow, Moon."},
+  {l:"Journal page",t:"Eli's handwriting, shaky: \"They call themselves the Hollow Choir. Leader: the Cantor. They don't kill anyone. They empty you, then wear you. I'm going in as an initiate. My number is 9. If I stop writing, it worked.\"",clue:"Eli is Initiate No. 9."},
+  {l:"Tally marks",t:"Hundreds of tally marks, grouped in fives. The groups stop at the door. The last group has a sixth line through it, deeper than the others."},
+  {l:"The dark behind you",t:"You hold your breath. The breathing does not stop. It simply stops matching yours, and goes on at its own pace, a little closer than before."}
+ ],
+ puz:{ask:"The door has four symbols. Press them in the right order.",type:"seq",ans:["Candle","Bell","Crow","Moon"],hints:["Something on the wall describes an order, if you can see it.","You need light to read the scratches.","Candle, then bell, then crow, then moon."]},
+ win:"The door swings inward. On a hook just inside hangs a folded grey robe, as if it were waiting for you. It is your size. You put it on. It is warm.",
+ reward:["robe"]
+},
+{
+ title:"The Congregation Hall",
+ intro:"A cavern, lit by hundreds of candles. Forty figures in grey robes stand in rows, facing a stone door at the far end. They hum a single note, perfectly together. Their faces are smooth, as if the features had been worn away like old coins.\n\nNo one turns when you walk in. In the robe, you are one of them.",
+ spots:[
+  {l:"Ledger",t:"A great book on a lectern, names in columns with numbers beside them. Near the bottom: \"Initiate No. 9, E. Vance. Vessel. Midnight.\" The line below, written yesterday in handwriting that looks like Eli's, reads: \"Sister. Soon.\" It is your name.",item:"ledger",clue:"Eli is to be the Vessel at midnight. Your name is in the ledger too."},
+  {l:"Congregation",t:"You walk the rows. One figure wears a wedding ring. Another has a name tag still pinned under the robe: HI, MY NAME IS DENNIS. None of them blink."},
+  {l:"Stone door",t:"A woman in a taller hood stands before it. The Warden. Her voice is a thousand hums in one throat: \"Brother. State the number of the lamb you carry, times the bells that hang above the Choir.\""},
+  {l:"Candles",t:"Each candle sits on a small cloth. Each cloth is embroidered with a different name. Most of the cloths are very old. A few look new."}
+ ],
+ puz:{ask:"The Warden waits. Give her the number.",type:"code",ans:["27"],req:"robe",reqText:"The Warden sees your face. She does not speak, but the humming turns toward you. You step back until it fades. You need to look like one of them.",hints:["Two numbers are needed. One came from the journal, one from the chapel.","Eli's number times the number of bells.","9 times 3."]},
+ win:"The Warden bows her head and steps aside. The stone door rolls open on a room of white light. The humming drops away to a single voice. You know that voice.",
+ reward:[]
+},
+{
+ title:"The Vessel",
+ intro:"Eli sits in a stone chair at the center of the room, eyes open, mouth moving in the hymn. He is alive. He is breathing. He does not see you.\n\nBehind him stands a tall figure with no hood, no robe, and no face at all. When it speaks, forty voices speak with it. \"Sister. You came for the one we'll keep. Stay, and we'll keep you both.\"\n\nThe bells begin to ring above you. Midnight.",
+ spots:[
+  {l:"Eli",t:"His hands are cold. You press your forehead to his. For one second his lips stop moving and he says your name. Then the hymn takes him back."},
+  {l:"The Cantor",t:"\"The hymn is sung to fill the empty,\" the Cantor says. \"Sing it backward, and it empties instead.\" It seems pleased by its own cruelty. It does not seem to realize it has told you what to do.",clue:"A hymn sung backward undoes the Choir."},
+  {l:"The great bell",t:"A bell the size of a car hangs from the ceiling. Its clapper is gone. Wired where the clapper should be is a child's shoe, laced and tied."},
+  {l:"Your reflection",t:"In the polished stone of the chair, your reflection has no face. You look away fast, and when you look back it is yours again. Mostly."}
+ ],
+ puz:{ask:"Reverse the hymn. Press the symbols in the opposite order.",type:"seq",ans:["Moon","Crow","Bell","Candle"],hints:["The first hymn was Candle, Bell, Crow, Moon.","Reverse the whole order, last to first.","Moon, then crow, then bell, then candle."]},
+ win:"The ringing stops. The forty figures flinch as one. The Cantor turns its blank face toward you, and the hum turns into something closer to a scream. Eli blinks. Midnight is passing, and the choice is yours.",
+ reward:[],
+ final:true
+}
+];
+
+const ENDINGS=[
+ {id:"burn",l:"Burn the ledger",need:["candle","ledger"],nt:"You need a flame and the page.",
+  t:"You hold the candle to the torn ledger page. Every name on it catches. The figures drop their robes one by one, and underneath each is an ordinary person, blinking and crying and asking what year it is. The Cantor unravels into a thin gray thread of smoke.\n\nEli walks out beside you at dawn. He is quiet for a long time. He is, you think, himself.\n\nMonths later, you wake in the middle of the night to the sound of humming. It is coming from your own throat.",
+  tag:"ENDING: THE LEDGER BURNS"},
+ {id:"tape",l:"Play Eli's tape into the bell",need:["cassette"],nt:"You have nothing to play.",
+  t:"You press play and hold the recorder to the bell's open mouth. Eli's own voice fills the cavern, from the day before he joined, reading his full name and date of birth and the name of his sister, over and over. The forty figures flinch at the sound of who they were.\n\nEli takes your hand. You walk out through the hall past people who look at you as if you are very far away.\n\nYou never find out who the Cantor was. You never find out what filled the empty chair after you left.",
+  tag:"ENDING: THE TAPE PLAYS"},
+ {id:"stay",l:"Take Eli's place in the chair",need:[],
+  t:"You step into the stone chair. Eli stumbles up out of it, gasping, and you tell him to run. He runs. You hear him not looking back.\n\nThe humming comes in softly, like warm water. It is not painful. It is almost kind. The last thing you notice is how quiet your own thoughts become.\n\nIn the ledger, in your own handwriting, a new line appears: \"Initiate No. 10. Vessel. Always.\"",
+  tag:"ENDING: THE VESSEL"}
+];
+
+let S=load()||{ch:-1,inv:[],clues:[],seen:{},solved:false,end:null,msg:"",bad:false,seq:[]};
+function load(){try{return JSON.parse(localStorage.getItem("hollow-choir-v1"))}catch(e){return null}}
+function save(){try{localStorage.setItem("hollow-choir-v1",JSON.stringify(S))}catch(e){}}
+const has=i=>S.inv.includes(i);
+const $=id=>document.getElementById(id);
+let hintN={};
+
+function hdr(){return `<div class="top"><span>${S.ch>=0&&S.ch<CH.length?"Chapter "+(S.ch+1)+" of "+CH.length:"A case file"}</span><span><button class="small" onclick="toggleSound()" id="snd">Sound: off</button> <button class="small" onclick="reset()">Restart</button></span></div>`}
+
+function render(){
+ const A=$("app");
+ if(S.ch<0){
+  A.innerHTML=hdr()+`<h1 class="flick">The Hollow Choir</h1>
+  <p class="story">Your brother Eli went to a small town to write about a quiet group that sings together at night. Nine days ago he stopped answering.\n\nFind the clues. Solve what is in your way. Follow him down.\n\nBest played alone, in the dark, with headphones.</p>
+  <button onclick="start()">Begin</button>`;
+  return;
+ }
+ if(S.end!==null){
+  const e=ENDINGS[S.end];
+  A.innerHTML=hdr()+`<h2>${CH[4].title}</h2><p class="story">${e.t}</p><p class="end">${e.tag}</p><div class="row"><button onclick="reset()">Play again</button></div>`;
+  return;
+ }
+ const c=CH[S.ch];
+ let h=hdr()+`<h2>${c.title}</h2><p class="story">${c.intro}</p><div class="spots">`;
+ c.spots.forEach((s,i)=>{h+=`<button class="${S.seen[S.ch+"-"+i]?"seen":""}" onclick="spot(${i})">${s.l}</button>`});
+ h+=`</div><div class="read ${S.bad?"bad":""}" id="read" aria-live="polite">${S.msg||"Look around."}</div>`;
+ if(S.solved){
+  h+=`<div class="puz"><p>${c.win}</p>`;
+  if(c.final){
+   h+=`<p>What do you do?</p><div class="row">`;
+   ENDINGS.forEach((e,i)=>{const ok=e.need.every(has);h+=`<button ${ok?"":"disabled"} onclick="finish(${i})" title="${ok?"":e.nt}">${e.l}</button>`});
+   h+=`</div>`;
+  } else h+=`<div class="row"><button onclick="next()">Continue</button></div>`;
+  h+=`</div>`;
+ } else {
+  const p=c.puz;
+  h+=`<div class="puz" id="puz"><p>${p.ask}</p>`;
+  if(p.type==="code") h+=`<input id="ans" autocomplete="off" aria-label="Answer" onkeydown="if(event.key==='Enter')check()"> <button onclick="check()">Try it</button>`;
+  else{
+   h+=`<div class="seq">`+SYM.map(s=>`<button onclick="pick('${s}')">${s}</button>`).join("")+`</div><div class="cur">${S.seq.join(" > ")||"..."}</div><div class="row"><button onclick="check()">Try it</button><button onclick="S.seq=[];render()">Clear</button></div>`;
+  }
+  h+=`<div class="row"><button class="small" onclick="hint()">Hint</button></div></div>`;
+ }
+ h+=`<aside><b>Inventory</b><ul>${S.inv.length?S.inv.map(i=>"<li>"+ITEMS[i]+"</li>").join(""):"<li>nothing yet</li>"}</ul><b>Clues</b><ul>${S.clues.length?S.clues.map(i=>"<li>"+i+"</li>").join(""):"<li>nothing yet</li>"}</ul></aside>`;
+ A.innerHTML=h;
+}
+
+function start(){S.ch=0;save();render()}
+function say(m,bad){S.msg=m;S.bad=!!bad;save();render()}
+function spot(i){
+ const s=CH[S.ch].spots[i];
+ if(s.need&&!has(s.need)){say(s.nt,true);return}
+ S.seen[S.ch+"-"+i]=1;
+ if(s.clue&&!S.clues.includes(s.clue))S.clues.push(s.clue);
+ if(s.item&&!has(s.item))S.inv.push(s.item);
+ say(s.t);whisper();
+}
+function pick(s){const n=CH[S.ch].puz.ans.length;if(S.seq.length<n)S.seq.push(s);save();render()}
+function check(){
+ const p=CH[S.ch].puz;
+ if(p.req&&!has(p.req)){say(p.reqText,true);return}
+ let v;
+ if(p.type==="code")v=$("ans").value.trim().toLowerCase();else v=S.seq.join("|").toLowerCase();
+ const ok=p.type==="code"?p.ans.includes(v):v===p.ans.join("|").toLowerCase();
+ if(ok){
+  S.solved=true;S.seq=[];
+  (CH[S.ch].reward||[]).forEach(i=>{if(!has(i))S.inv.push(i)});
+  S.msg="Something gives way.";S.bad=false;save();render();
+ } else {
+  S.seq=[];S.msg="Nothing happens. The humming seems to notice.";S.bad=true;save();render();
+  const el=$("puz");if(el)el.classList.add("shake");
+ }
+}
+function hint(){
+ const p=CH[S.ch].puz;const k=S.ch;hintN[k]=Math.min((hintN[k]||0)+1,p.hints.length);
+ say("Hint "+hintN[k]+": "+p.hints[hintN[k]-1]);
+}
+function next(){S.ch++;S.solved=false;S.msg="";S.bad=false;S.seq=[];save();render();window.scrollTo(0,0)}
+function finish(i){S.end=i;save();render();window.scrollTo(0,0)}
+function reset(){if(confirm("Start over from the beginning?")){S={ch:-1,inv:[],clues:[],seen:{},solved:false,end:null,msg:"",bad:false,seq:[]};hintN={};save();render()}}
+
+/* mood */
+const W=["it knows your name","behind you","eli is not eli","hum with us","you are already inside"];
+function whisper(){
+ if(Math.random()>.25)return;
+ const w=$("whisper");w.textContent=W[Math.floor(Math.random()*W.length)];w.style.opacity=.8;
+ setTimeout(()=>w.style.opacity=0,1800);
+}
+let ctx=null,nodes=[];
+function toggleSound(){
+ const b=$("snd");
+ if(nodes.length){nodes.forEach(n=>n.stop());nodes=[];b.textContent="Sound: off";return}
+ try{
+  ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+  const g=ctx.createGain();g.gain.value=.05;g.connect(ctx.destination);
+  [55,55.7,82.4].forEach(f=>{const o=ctx.createOscillator();o.type="sine";o.frequency.value=f;o.connect(g);o.start();nodes.push(o)});
+  b.textContent="Sound: on";
+ }catch(e){}
+}
+render();
+</script>
+</body>
+</html>
